@@ -1,8 +1,8 @@
 {
-  "author": "WeAreAthlon <hello@weareathlon.com> (https://www.weareathlon.com)",
-  "name": "@weareathlon/frontend-webpack-boilerplate",
-  "version": "5.12.1",
-  "description": "Starter project template boilerplate based on Webpack with SASS/PostCSS and babel ES6/7 support.",
+  "author": "Racer242",
+  "name": "Dice3d",
+  "version": "1.0.0",
+  "description": "Dice3d Name",
   "homepage": "https://github.com/WeAreAthlon/frontend-webpack-boilerplate#readme",
   "browserslist": [
     "last 2 versions",

@@ -1,11 +1,23 @@
 #dice3d {
   position: absolute;
+  top:10px;
+  bottom:10px;
+  left:10px;
+  right:10px;
+  visibility: hidden;
+  background-image: url(../images/scene.png);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+#gameBox {
+  position: absolute;
   top:100px;
   bottom:100px;
   left:100px;
   right:100px;
-  visibility: hidden;
-  background-image: url(../images/content/scene.png);
+  background-image: url(../images/back.png);
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
