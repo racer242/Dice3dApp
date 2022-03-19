@@ -13,6 +13,8 @@ import {
   sRGBEncoding,
   AmbientLight,
   ShadowMaterial,
+  TextureLoader,
+  MeshPhysicalMaterial
 } from 'three';
 
 import { RoundedBoxGeometry } from "./geometries/RoundedBoxGeometry"
@@ -32,8 +34,9 @@ class gameScene {
       y:-0.5,
       z:.5,
       r:0.3,
-      f:0.13,
+      f:0.16,
     }
+
     if (props?.dice) {
       this.diceProps={
         ...this.diceProps,
@@ -44,7 +47,7 @@ class gameScene {
     this.cameraProps={
       x:2,
       y:-1,
-      z:10,
+      z:15,
     }
     if (props?.camera) {
       this.cameraProps={
@@ -56,7 +59,7 @@ class gameScene {
     this.lightProps={
       x:5,
       y:-5,
-      z:15,
+      z:25,
       b:0.8,
       a:0.3,
     }
@@ -78,8 +81,47 @@ class gameScene {
       }
     }
 
-    this.direction=1;
+
     this.animation=1;
+
+    this.edges=[
+      "Asset 5@3x-8.png",
+      "Asset 6@3x-8.png",
+      "Asset 7@3x-8.png",
+      "Asset 8@3x-8.png",
+    ];
+
+    if (props?.edges) {
+      this.edges=props.edges;
+    }
+    let randEdges=this.edges.concat();
+    this.edges.push(randEdges.splice(Math.floor(Math.random()*randEdges.length),1)[0]);
+    this.edges.push(randEdges.splice(Math.floor(Math.random()*randEdges.length),1)[0]);
+
+    randEdges=this.edges.concat();
+    let resultEdges=[];
+    let endEdges=[];
+
+    for (let i = 0; i < 4; i++) {
+      let first1=randEdges.splice(0,1)[0];
+      let index2=randEdges.indexOf(first1);
+      if (index2>=0) {
+        let first2=randEdges.splice(index2,1)[0];
+        resultEdges.push(first1);
+        resultEdges.push(first2);
+      } else {
+        endEdges.push(first1);
+      }
+    }
+    this.edges=resultEdges.concat(endEdges);
+
+    this.texturesPath='./images/content/';
+    if (props?.texturesPath) {
+      this.texturesPath=props.texturesPath;
+    }
+
+    this.direction=1;
+
 
     this.defaultRendererWidth=1024;
 
@@ -107,13 +149,31 @@ class gameScene {
     this.scene = new Scene();
   }
 
+
+  loadTextures() {
+    const material = new THREE.MeshBasicMaterial(  );
+  }
+
   createObjects() {
 
     let geometry, material, mesh;
 
     geometry = new RoundedBoxGeometry( this.diceProps.w, this.diceProps.h, this.diceProps.d, 7, this.diceProps.f );
-    material = new MeshPhongMaterial();
-    mesh = new Mesh( geometry, material );
+
+    let textureLoader = new TextureLoader();
+    textureLoader.setPath(this.texturesPath);
+    let materials = [];
+
+    for (let i = 0; i < 6; i++) {
+      let material=new MeshPhysicalMaterial( { map: textureLoader.load( this.edges[i] )} )
+      material.roughness=0;
+      material.metalness=0.05;
+      material.clearcoat=0.9;
+      material.clearcoatRoughness=0;
+      materials.push(material);
+    }
+
+    mesh = new Mesh( geometry, materials );
     mesh.castShadow = true;
     this.scene.add( mesh );
     this.dice = mesh;
@@ -153,7 +213,7 @@ class gameScene {
       this.dice.rotation.y = time / 1000;
 
       this.dice.position.z +=0.1 * this.direction;
-      if (this.dice.position.z>5) {
+      if (this.dice.position.z>6) {
         this.direction=-1
       }
       if (this.dice.position.z<1) {
@@ -176,9 +236,9 @@ class gameScene {
   }
 
   resize() {
-    this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
-    this.camera.zoom=this.container.clientWidth/this.defaultRendererWidth;
-    this.camera.updateProjectionMatrix();
+    // this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
+    // this.camera.zoom=this.container.clientWidth/this.defaultRendererWidth;
+    // this.camera.updateProjectionMatrix();
     this.renderer.setSize( this.container.clientWidth, this.container.clientHeight );
   }
 
