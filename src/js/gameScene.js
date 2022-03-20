@@ -18,7 +18,7 @@ import {
 } from 'three';
 
 import { RoundedBoxGeometry } from "./geometries/RoundedBoxGeometry"
-
+import TWEEN from '@tweenjs/tween.js'
 
 class gameScene {
 
@@ -32,7 +32,7 @@ class gameScene {
       d:1.6,
       x:0.1,
       y:-0.5,
-      z:.5,
+      z:.8,
       r:0.3,
       f:0.14,
       m:{
@@ -87,19 +87,29 @@ class gameScene {
       }
     }
 
-
-    this.animation=10;
-
-    this.edges=[
+    this.edgeTextures=[
       "Asset 5@3x-8.png",
       "Asset 6@3x-8.png",
       "Asset 7@3x-8.png",
       "Asset 8@3x-8.png",
+      // "1.png",
+      // "2.png",
+      // "3.png",
+      // "4.png",
+      // "5.png",
+      // "6.png",
+    ];
+    if (props?.edgeTextures) {
+      this.edgeTextures=props.edgeTextures;
+    }
+
+    this.edges=[
+      0,
+      1,
+      2,
+      3,
     ];
 
-    if (props?.edges) {
-      this.edges=props.edges;
-    }
     let randEdges=this.edges.concat();
     this.edges.push(randEdges.splice(Math.floor(Math.random()*randEdges.length),1)[0]);
     this.edges.push(randEdges.splice(Math.floor(Math.random()*randEdges.length),1)[0]);
@@ -126,13 +136,115 @@ class gameScene {
       this.texturesPath=props.texturesPath;
     }
 
-    this.direction=1;
+    this.diceRotations=[
+      {x:0,y:-Math.PI/2,z:0},
+      {x:0,y:Math.PI/2,z:0},
+      {x:Math.PI/2,y:0,z:0},
+      {x:-Math.PI/2,y:0,z:0},
+      {x:0,y:0,z:0},
+      {x:0,y:-Math.PI,z:0},
+    ];
 
 
     this.defaultRendererWidth=1024;
 
     this.iteration=this.iteration.bind(this);
 
+    this.animation=false;
+
+  }
+
+  run() {
+    this.animation=true;
+
+    this.downLimit=this.diceProps.d/2;
+    this.upLimit=6.5;
+
+    this.desiredValue=Math.floor(Math.random()*4);
+    this.desiredIndex=this.edges.indexOf(this.desiredValue);
+    this.desiredRotation=this.diceRotations[this.desiredIndex];
+
+    this.jumpCount=5;
+    this.jumpScatter=.1;
+    this.jumpFirstDuration=800;
+    this.jumpLastDuration=200;
+    this.startDelay=500;
+
+    let motionTweens=[];
+    let jumpHeight=this.upLimit;
+    let jumpStep=(this.upLimit-this.downLimit)/this.jumpCount;
+
+    let duration=this.jumpFirstDuration;
+    let durationStep=(this.jumpFirstDuration-this.jumpLastDuration)/this.jumpCount;
+
+    let rotationTweens=[];
+
+    for (let i = 0; i < this.jumpCount; i++) {
+
+      let upTween=(new TWEEN.Tween(this.dice.position))
+      .to({
+        x:this.diceProps.x+(this.jumpCount-i-1)*(this.jumpScatter-this.jumpScatter*2*Math.random()),
+        y:this.diceProps.y+(this.jumpCount-i-1)*(this.jumpScatter-this.jumpScatter*2*Math.random()),
+        z:jumpHeight,
+      },duration/2)
+      .easing(TWEEN.Easing.Cubic.Out);
+
+      let downTween=(new TWEEN.Tween(this.dice.position))
+      .to({
+        x:this.diceProps.x+(this.jumpCount-i-1)*(this.jumpScatter-this.jumpScatter*2*Math.random()),
+        y:this.diceProps.y+(this.jumpCount-i-1)*(this.jumpScatter-this.jumpScatter*2*Math.random()),
+        z:this.downLimit,
+      },duration/2)
+      .easing(TWEEN.Easing.Cubic.In);
+
+      motionTweens.push(upTween);
+      motionTweens.push(downTween);
+
+      let rotationTween;
+      if (i<this.jumpCount-1) {
+        rotationTween=(new TWEEN.Tween(this.dice.rotation))
+        .to({
+          x:this.desiredRotation.x+(this.jumpCount-i)*.7*Math.random(),
+          y:this.desiredRotation.y+(this.jumpCount-i)*.7*Math.random(),
+          z:this.desiredRotation.z+(this.jumpCount-i)*.7*Math.random(),
+        },duration)
+      } else {
+        rotationTween=(new TWEEN.Tween(this.dice.rotation))
+        .to(this.desiredRotation,duration)
+        .easing(TWEEN.Easing.Back.Out);
+      }
+
+      rotationTweens.push(rotationTween);
+
+      jumpHeight-=jumpStep;
+      duration-=durationStep;
+    }
+
+    for (let i = 0; i < motionTweens.length-1; i++) {
+      motionTweens[i].chain(motionTweens[i+1]);
+    }
+
+    for (let i = 0; i < rotationTweens.length-1; i++) {
+      rotationTweens[i].chain(rotationTweens[i+1]);
+    }
+
+    motionTweens[0].delay(this.startDelay);
+    motionTweens[0].start();
+
+    rotationTweens[0].delay(this.startDelay);
+    rotationTweens[0].start();
+
+    motionTweens[motionTweens.length-1].onComplete(()=>{
+      this.run();
+    })
+  }
+
+  stop() {
+    this.animation=false;
+    this.dice.position.z=this.downLimit;
+    this.dice.rotation.x=this.desiredRotation.x;
+    this.dice.rotation.y=this.desiredRotation.y;
+    this.dice.rotation.z=this.desiredRotation.z;
   }
 
   createRenderer() {
@@ -171,7 +283,7 @@ class gameScene {
     let materials = [];
 
     for (let i = 0; i < 6; i++) {
-      let material=new MeshPhysicalMaterial( { map: textureLoader.load( this.edges[i] )} )//MeshPhysicalMaterial//MeshPhongMaterial
+      let material=new MeshPhysicalMaterial( { map: textureLoader.load( this.edgeTextures[this.edges[i]] )} )//MeshPhysicalMaterial//MeshPhongMaterial
       material.roughness=this.diceProps.roughness;
       material.metalness=this.diceProps.metalness;
       material.clearcoat=this.diceProps.clearcoat;
@@ -213,20 +325,9 @@ class gameScene {
 
 
   iteration( time ) {
-
     if (this.animation) {
-      this.dice.rotation.x = time / 2000;
-      this.dice.rotation.y = time / 1000;
-
-      this.dice.position.z +=0.1 * this.direction;
-      if (this.dice.position.z>6) {
-        this.direction=-1
-      }
-      if (this.dice.position.z<1) {
-        this.direction=1
-      }
+      TWEEN.update();
     }
-
     this.renderer.render( this.scene, this.camera );
   }
 
@@ -257,6 +358,8 @@ class gameScene {
 
   start() {
     this.renderer.setAnimationLoop( this.iteration );
+
+    this.run();
   }
 
 }
