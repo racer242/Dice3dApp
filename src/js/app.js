@@ -7,7 +7,7 @@ const gameContainer = document.getElementById("dice3d");
 let scene = new gameScene(gameContainer);
 
 const updateBounds=()=>{
-  let scale=Math.min(container.clientWidth/1024,container.clientHeight/1024);
+  let scale=Math.min(container.clientWidth/1280,container.clientHeight/1280);
   gameContainer.style.transform="translate(-50%,-50%) scale("+scale+","+scale+")";
 }
 

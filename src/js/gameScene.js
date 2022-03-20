@@ -30,11 +30,17 @@ class gameScene {
       w:1.6,
       h:1.6,
       d:1.6,
-      x:0.2,
+      x:0.1,
       y:-0.5,
       z:.5,
       r:0.3,
-      f:0.16,
+      f:0.14,
+      m:{
+        roughness:0,//0,
+        metalness:0.9,//0.05,
+        clearcoat:0.9,
+        clearcoatRoughness:0,//0,
+      }
     }
 
     if (props?.dice) {
@@ -45,8 +51,8 @@ class gameScene {
     }
 
     this.cameraProps={
-      x:2,
-      y:-1,
+      x:0,
+      y:-3,
       z:15,
     }
     if (props?.camera) {
@@ -58,10 +64,10 @@ class gameScene {
 
     this.lightProps={
       x:5,
-      y:-5,
+      y:-1,
       z:25,
-      b:0.8,
-      a:0.3,
+      b:0.7,
+      a:0.5,
     }
     if (props?.light) {
       this.lightProps={
@@ -71,7 +77,7 @@ class gameScene {
     }
 
     this.shadowProps={
-      r:40,
+      r:15,
       o:.2,
     }
     if (props?.shadow) {
@@ -82,7 +88,7 @@ class gameScene {
     }
 
 
-    this.animation=1;
+    this.animation=10;
 
     this.edges=[
       "Asset 5@3x-8.png",
@@ -165,11 +171,11 @@ class gameScene {
     let materials = [];
 
     for (let i = 0; i < 6; i++) {
-      let material=new MeshPhysicalMaterial( { map: textureLoader.load( this.edges[i] )} )
-      material.roughness=0;
-      material.metalness=0.05;
-      material.clearcoat=0.9;
-      material.clearcoatRoughness=0;
+      let material=new MeshPhysicalMaterial( { map: textureLoader.load( this.edges[i] )} )//MeshPhysicalMaterial//MeshPhongMaterial
+      material.roughness=this.diceProps.roughness;
+      material.metalness=this.diceProps.metalness;
+      material.clearcoat=this.diceProps.clearcoat;
+      material.clearcoatRoughness=this.diceProps.clearcoatRoughness;
       materials.push(material);
     }
 
@@ -197,8 +203,8 @@ class gameScene {
     light.position.set( this.lightProps.x, this.lightProps.y, this.lightProps.z );
     light.castShadow = true;
     light.shadow.radius = this.shadowProps.r;
-    light.shadow.mapSize.width = 512*4;
-    light.shadow.mapSize.height = 512*4;
+    light.shadow.mapSize.width = 512*2;
+    light.shadow.mapSize.height = 512*2;
     this.scene.add( light );
 
     const ambientLight = new AmbientLight(0xffffff, this.lightProps.a);
@@ -239,7 +245,14 @@ class gameScene {
     // this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
     // this.camera.zoom=this.container.clientWidth/this.defaultRendererWidth;
     // this.camera.updateProjectionMatrix();
-    this.renderer.setSize( this.container.clientWidth, this.container.clientHeight );
+    // console.log(window.devicePixelRatio);
+    // this.renderer.setPixelRatio( window.devicePixelRatio );
+    this.camera.zoom=2;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize( this.container.clientWidth/2, this.container.clientHeight/2 );
+    this.renderer.domElement.style.position="absolute";
+    this.renderer.domElement.style.left=this.container.clientWidth/4+"px";
+    this.renderer.domElement.style.top=this.container.clientHeight/4+"px";
   }
 
   start() {
