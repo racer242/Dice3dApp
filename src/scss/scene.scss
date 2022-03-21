@@ -25,3 +25,16 @@
   background-size: contain;
   overflow: hidden;
 }
+
+#startButton {
+  position: absolute;
+  left:50%;
+  bottom:50px;
+  width: 200px;
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+  background-color: #ccc;
+  transform: translateX(-50%);
+  cursor: pointer;
+}

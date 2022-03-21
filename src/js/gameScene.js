@@ -87,6 +87,50 @@ class gameScene {
       }
     }
 
+    this.startDelay=100;
+    if (props?.startDelay) {
+      this.startDelay=props.startDelay;
+    }
+
+    this.downLimit=this.diceProps.d/2;
+    this.upLimit=6.5;
+    if (props?.upLimit) {
+      this.upLimit=props.upLimit;
+    }
+
+    this.jumpCount=7;
+    this.jumpScatter=.1;
+    this.jumpFirstDuration=800;
+    this.jumpLastDuration=300;
+    this.jumpRandom=2;
+    if (props?.jump) {
+      this.jumpCount=props.jump.count;
+      this.jumpScatter=props.jump.scatter;
+      this.jumpFirstDuration=props.jump.firstDuration;
+      this.jumpLastDuration=props.jump.lastDuration;
+      this.jumpRandom=props.jump.random;
+    }
+
+    this.rotationRandomPlace=.3;
+    this.rotationStartRandom=1.5;
+    this.rotationEndRandom=.5;
+    if (props?.rotation) {
+      this.rotationRandomPlace=props.rotation.randomPlace;
+      this.rotationStartRandom=props.rotation.startRandom;
+      this.rotationEndRandom=props.rotation.endRandom;
+    }
+
+    this.startCallback=()=>{};
+    this.finishCallback=()=>{};
+    if (props?.callbacks) {
+      if (props.callbacks.start) {
+        this.startCallback=props.callbacks.start;
+      }
+      if (props.callbacks.finish) {
+        this.finishCallback=props.callbacks.finish;
+      }
+    }
+
     this.edgeTextures=[
       "Asset 5@3x-8.png",
       "Asset 6@3x-8.png",
@@ -145,30 +189,21 @@ class gameScene {
       {x:0,y:-Math.PI,z:0},
     ];
 
-
-    this.defaultRendererWidth=1024;
-
     this.iteration=this.iteration.bind(this);
 
     this.animation=false;
 
   }
 
-  run() {
+  run(value) {
+    if (this.animation) return;
     this.animation=true;
 
-    this.downLimit=this.diceProps.d/2;
-    this.upLimit=6.5;
-
-    this.desiredValue=Math.floor(Math.random()*4);
+    this.desiredValue=value;
     this.desiredIndex=this.edges.indexOf(this.desiredValue);
     this.desiredRotation=this.diceRotations[this.desiredIndex];
 
-    this.jumpCount=5;
-    this.jumpScatter=.1;
-    this.jumpFirstDuration=800;
-    this.jumpLastDuration=200;
-    this.startDelay=500;
+    this.startCallback(this.desiredValue);
 
     let motionTweens=[];
     let jumpHeight=this.upLimit;
@@ -183,16 +218,16 @@ class gameScene {
 
       let upTween=(new TWEEN.Tween(this.dice.position))
       .to({
-        x:this.diceProps.x+(this.jumpCount-i-1)*(this.jumpScatter-this.jumpScatter*2*Math.random()),
-        y:this.diceProps.y+(this.jumpCount-i-1)*(this.jumpScatter-this.jumpScatter*2*Math.random()),
+        x:this.diceProps.x+(this.jumpCount-i-1)*(this.jumpScatter-this.jumpScatter*this.jumpRandom*Math.random()),
+        y:this.diceProps.y+(this.jumpCount-i-1)*(this.jumpScatter-this.jumpScatter*this.jumpRandom*Math.random()),
         z:jumpHeight,
       },duration/2)
       .easing(TWEEN.Easing.Cubic.Out);
 
       let downTween=(new TWEEN.Tween(this.dice.position))
       .to({
-        x:this.diceProps.x+(this.jumpCount-i-1)*(this.jumpScatter-this.jumpScatter*2*Math.random()),
-        y:this.diceProps.y+(this.jumpCount-i-1)*(this.jumpScatter-this.jumpScatter*2*Math.random()),
+        x:this.diceProps.x+(this.jumpCount-i-1)*(this.jumpScatter-this.jumpScatter*this.jumpRandom*Math.random()),
+        y:this.diceProps.y+(this.jumpCount-i-1)*(this.jumpScatter-this.jumpScatter*this.jumpRandom*Math.random()),
         z:this.downLimit,
       },duration/2)
       .easing(TWEEN.Easing.Cubic.In);
@@ -201,12 +236,20 @@ class gameScene {
       motionTweens.push(downTween);
 
       let rotationTween;
+      if (i<this.jumpCount*this.rotationRandomPlace) {
+        rotationTween=(new TWEEN.Tween(this.dice.rotation))
+        .to({
+          x:this.desiredRotation.x+(this.jumpCount-i)*this.rotationStartRandom*Math.random(),
+          y:this.desiredRotation.y+(this.jumpCount-i)*this.rotationStartRandom*Math.random(),
+          z:this.desiredRotation.z+(this.jumpCount-i)*this.rotationStartRandom*Math.random(),
+        },duration)
+      } else
       if (i<this.jumpCount-1) {
         rotationTween=(new TWEEN.Tween(this.dice.rotation))
         .to({
-          x:this.desiredRotation.x+(this.jumpCount-i)*.7*Math.random(),
-          y:this.desiredRotation.y+(this.jumpCount-i)*.7*Math.random(),
-          z:this.desiredRotation.z+(this.jumpCount-i)*.7*Math.random(),
+          x:this.desiredRotation.x+(this.jumpCount-i)*this.rotationEndRandom*Math.random(),
+          y:this.desiredRotation.y+(this.jumpCount-i)*this.rotationEndRandom*Math.random(),
+          z:this.desiredRotation.z+(this.jumpCount-i)*this.rotationEndRandom*Math.random(),
         },duration)
       } else {
         rotationTween=(new TWEEN.Tween(this.dice.rotation))
@@ -235,7 +278,8 @@ class gameScene {
     rotationTweens[0].start();
 
     motionTweens[motionTweens.length-1].onComplete(()=>{
-      this.run();
+      this.animation=false;
+      this.finishCallback(this.desiredValue);
     })
   }
 
@@ -283,7 +327,7 @@ class gameScene {
     let materials = [];
 
     for (let i = 0; i < 6; i++) {
-      let material=new MeshPhysicalMaterial( { map: textureLoader.load( this.edgeTextures[this.edges[i]] )} )//MeshPhysicalMaterial//MeshPhongMaterial
+      let material=new MeshPhysicalMaterial( { color:0xffffff, map: textureLoader.load( this.edgeTextures[this.edges[i]] )} )//MeshPhysicalMaterial//MeshPhongMaterial
       material.roughness=this.diceProps.roughness;
       material.metalness=this.diceProps.metalness;
       material.clearcoat=this.diceProps.clearcoat;
@@ -343,11 +387,6 @@ class gameScene {
   }
 
   resize() {
-    // this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
-    // this.camera.zoom=this.container.clientWidth/this.defaultRendererWidth;
-    // this.camera.updateProjectionMatrix();
-    // console.log(window.devicePixelRatio);
-    // this.renderer.setPixelRatio( window.devicePixelRatio );
     this.camera.zoom=2;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize( this.container.clientWidth/2, this.container.clientHeight/2 );
@@ -358,8 +397,6 @@ class gameScene {
 
   start() {
     this.renderer.setAnimationLoop( this.iteration );
-
-    this.run();
   }
 
 }

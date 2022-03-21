@@ -31,6 +31,7 @@ module.exports = {
     filename: 'js/[name].js',
     path: environment.paths.output,
   },
+
   module: {
     rules: [
       {

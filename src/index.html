@@ -7,10 +7,54 @@
     <meta name="keywords" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="author" content="Racer242">
+
   </head>
   <body>
     <div id="gameBox">
       <div id="dice3d"></div>
     </div>
+    <div id="startButton">
+      Пуск
+    </div>
+
+    <script>
+
+      const container = document.getElementById("gameBox");
+      const gameContainer = document.getElementById("dice3d");
+      const startButton = document.getElementById("startButton");
+
+      const updateBounds=()=>{
+        let scale=Math.min(container.clientWidth/1280,container.clientHeight/1280);
+        gameContainer.style.transform="translate(-50%,-50%) scale("+scale+","+scale+")";
+      }
+
+      const gameSceneInitProps={
+        container:gameContainer,
+        callbacks:{
+          start: function (value) {console.log("START",value);},
+          finish: function (value) {console.log("FINISH",value);},
+        }
+      }
+
+      window.addEventListener("resize",(event) => {
+        updateBounds();
+      });
+
+      window.addEventListener("load",(event) => {
+        updateBounds();
+
+        scene.start();
+
+        scene.resize();
+        gameContainer.style.visibility="visible";
+      });
+
+      startButton.addEventListener("click",(event) => {
+        var value = Math.floor(Math.random()*4);
+        startButton.innerHTML=value;
+        scene.run(value);
+      });
+    </script>
+
   </body>
 </html>
