@@ -35,4 +35,15 @@ module.exports = merge(webpackConfiguration, {
 
   /* Additional plugins configuration */
   plugins: [],
+
+
+  entry: '/src/js/app.js',
+  output: {
+    path: '/src/js',
+    filename: 'dice3dGame.js',
+    libraryTarget: 'umd',
+    umdNamedDefine: true,
+    libraryExport: 'default',
+    library: 'Dice3dGame',
+  },
 });

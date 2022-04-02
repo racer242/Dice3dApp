@@ -1,0 +1,19 @@
+#dice3d {
+  position: absolute;
+  left:50%;
+  top:50%;
+  transform: translate(-50%,-50%);
+  visibility: hidden;
+
+  width:1280px;
+  height:1280px;
+
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+
+}
+
+#dice3dRenderer {
+    transition: opacity .2s ease-out;
+}

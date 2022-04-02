@@ -1,0 +1,28 @@
+#rotating {
+  position: absolute;
+  left:50%;
+  top:50%;
+  // visibility: hidden;
+  opacity: 0;
+  transition: opacity 1s;
+  animation:spin 10s linear infinite;
+}
+
+@keyframes spin {
+    100% {
+        transform:rotate(360deg);
+    }
+}
+
+#star {
+  position: absolute;
+  transform: translate(-50%,-50%) scale(.3,.3);
+  transition: transform 1s ease-out;
+
+  width:450px;
+  height:450px;
+
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}

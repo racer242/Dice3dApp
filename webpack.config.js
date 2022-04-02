@@ -118,6 +118,22 @@ module.exports = {
             ignore: ['*.DS_Store', 'Thumbs.db'],
           },
         },
+        {
+          from: path.resolve(environment.paths.source, 'libs'),
+          to: path.resolve(environment.paths.output, 'libs'),
+          toType: 'dir',
+          globOptions: {
+            ignore: ['*.DS_Store', 'Thumbs.db'],
+          },
+        },
+        {
+          from: path.resolve(environment.paths.source, 'static'),
+          to: path.resolve(environment.paths.output, 'static'),
+          toType: 'dir',
+          globOptions: {
+            ignore: ['*.DS_Store', 'Thumbs.db'],
+          },
+        },
       ],
     }),
   ].concat(htmlPluginEntries),

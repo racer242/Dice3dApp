@@ -20,11 +20,17 @@ import {
 import { RoundedBoxGeometry } from "./geometries/RoundedBoxGeometry"
 import TWEEN from '@tweenjs/tween.js'
 
-class gameScene {
+class GameScene {
 
-  constructor(container, props) {
+  constructor() {
+  }
 
-    this.container=container;
+  initProps(props) {
+
+    if (!props?.container) {
+      throw "You must to set container in props";
+    }
+    this.container=props.container;
 
     this.diceProps={
       w:1.6,
@@ -93,19 +99,25 @@ class gameScene {
     }
 
     this.downLimit=this.diceProps.d/2;
-    this.upLimit=6.5;
+    this.upLimit=6;
     if (props?.upLimit) {
       this.upLimit=props.upLimit;
     }
 
     this.jumpCount=7;
-    this.jumpScatter=.1;
+    this.jumpScatterX=0.1;
+    this.jumpScatterY=0.1;
+    this.jumpOffsetX=-0.05;
+    this.jumpOffsetY=-0.05;
     this.jumpFirstDuration=800;
     this.jumpLastDuration=300;
     this.jumpRandom=2;
     if (props?.jump) {
       this.jumpCount=props.jump.count;
-      this.jumpScatter=props.jump.scatter;
+      this.jumpScatterX=props.jump.scatter.x;
+      this.jumpScatterY=props.jump.scatter.y;
+      this.jumpOffsetX=props.jump.offset.x;
+      this.jumpOffsetY=props.jump.offset.y;
       this.jumpFirstDuration=props.jump.firstDuration;
       this.jumpLastDuration=props.jump.lastDuration;
       this.jumpRandom=props.jump.random;
@@ -123,6 +135,12 @@ class gameScene {
     this.startCallback=()=>{};
     this.finishCallback=()=>{};
     if (props?.callbacks) {
+      if (props.callbacks.create) {
+        this.createCallback=props.callbacks.create;
+      }
+      if (props.callbacks.load) {
+        this.loadCallback=props.callbacks.load;
+      }
       if (props.callbacks.start) {
         this.startCallback=props.callbacks.start;
       }
@@ -195,6 +213,23 @@ class gameScene {
 
   }
 
+  init(props) {
+
+    this.initProps(props);
+
+    this.createRenderer();
+    this.createCamera();
+    this.createScene();
+    this.createObjects();
+    this.createLight();
+
+    this.container.appendChild( this.renderer.domElement );
+    if (this.createCallback) {
+      this.createCallback(this);
+    }
+
+  }
+
   run(value) {
     if (this.animation) return;
     this.animation=true;
@@ -218,16 +253,16 @@ class gameScene {
 
       let upTween=(new TWEEN.Tween(this.dice.position))
       .to({
-        x:this.diceProps.x+(this.jumpCount-i-1)*(this.jumpScatter-this.jumpScatter*this.jumpRandom*Math.random()),
-        y:this.diceProps.y+(this.jumpCount-i-1)*(this.jumpScatter-this.jumpScatter*this.jumpRandom*Math.random()),
+        x:this.diceProps.x+(this.jumpCount-i-1)*(this.jumpOffsetX-this.jumpScatterX*.5+this.jumpScatterX*Math.random()),
+        y:this.diceProps.y+(this.jumpCount-i-1)*(this.jumpOffsetY-this.jumpScatterY*.5+this.jumpScatterY*Math.random()),
         z:jumpHeight,
       },duration/2)
       .easing(TWEEN.Easing.Cubic.Out);
 
       let downTween=(new TWEEN.Tween(this.dice.position))
       .to({
-        x:this.diceProps.x+(this.jumpCount-i-1)*(this.jumpScatter-this.jumpScatter*this.jumpRandom*Math.random()),
-        y:this.diceProps.y+(this.jumpCount-i-1)*(this.jumpScatter-this.jumpScatter*this.jumpRandom*Math.random()),
+        x:this.diceProps.x+(this.jumpCount-i-1)*(this.jumpOffsetX-this.jumpScatterX*.5+this.jumpScatterX*Math.random()),
+        y:this.diceProps.y+(this.jumpCount-i-1)*(this.jumpOffsetY-this.jumpScatterY*.5+this.jumpScatterY*Math.random()),
         z:this.downLimit,
       },duration/2)
       .easing(TWEEN.Easing.Cubic.In);
@@ -297,6 +332,9 @@ class gameScene {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = PCFSoftShadowMap;
     this.renderer.outputEncoding = sRGBEncoding;
+
+    this.element=this.renderer.domElement;
+    this.element.id = 'dice3dRenderer';
   }
 
   createCamera() {
@@ -324,10 +362,28 @@ class gameScene {
 
     let textureLoader = new TextureLoader();
     textureLoader.setPath(this.texturesPath);
+
     let materials = [];
 
+    let textureLoadCounter=6;
+
     for (let i = 0; i < 6; i++) {
-      let material=new MeshPhysicalMaterial( { color:0xffffff, map: textureLoader.load( this.edgeTextures[this.edges[i]] )} )//MeshPhysicalMaterial//MeshPhongMaterial
+      let material=new MeshPhysicalMaterial(
+        {
+          color:0xffffff,
+          map: textureLoader.load(
+            this.edgeTextures[this.edges[i]],
+            (t) => {
+              textureLoadCounter--;
+              if (textureLoadCounter===0) {
+                if (this.loadCallback) {
+                  this.loadCallback(this);
+                }
+              }
+            }
+          )
+        }
+      )//MeshPhysicalMaterial//MeshPhongMaterial
       material.roughness=this.diceProps.roughness;
       material.metalness=this.diceProps.metalness;
       material.clearcoat=this.diceProps.clearcoat;
@@ -375,17 +431,6 @@ class gameScene {
     this.renderer.render( this.scene, this.camera );
   }
 
-  init() {
-
-    this.createRenderer();
-    this.createCamera();
-    this.createScene();
-    this.createObjects();
-    this.createLight();
-
-    this.container.appendChild( this.renderer.domElement );
-  }
-
   resize() {
     this.camera.zoom=2;
     this.camera.updateProjectionMatrix();
@@ -400,4 +445,4 @@ class gameScene {
   }
 
 }
-export default gameScene;
+export default GameScene;

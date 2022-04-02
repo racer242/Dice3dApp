@@ -1,0 +1,21 @@
+#prizePopup {
+  position: absolute;
+  width: 1280px;
+  height: 800px;
+  transform: translate(-50%,-50%);
+  left:50%;
+  top:50%;
+}
+
+#prizeWindow {
+  position: absolute;
+  width: 1280px;
+  height: 800px;
+}
+
+#prize {
+  position: absolute;
+  transform: translate(-50%,-50%);
+  width:268px;
+  height:268px;
+}

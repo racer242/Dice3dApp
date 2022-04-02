@@ -8,10 +8,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="author" content="Racer242">
 
+    <script src="./libs/createjs-2015.11.26.min.js"></script>
+    <script src="./static/popup.js?1648909186200"></script>
+
+    <style>
+
+
+      #gameBox {
+        position: absolute;
+        top:20px;
+        bottom:20px;
+        left:20px;
+        right:20px;
+        background-image: url(./images/content/back.png);
+        background-position: center;
+        background-size: contain;
+        overflow: hidden;
+      }
+
+      #startButton {
+        position: absolute;
+        left:50%;
+        bottom:50px;
+        width: 200px;
+        height: 50px;
+        line-height: 50px;
+        text-align: center;
+        background-color: #ccc;
+        transform: translateX(-50%);
+        cursor: pointer;
+      }
+
+      #dice3d {
+        background-image: url(./images/content/scene.png);
+      }
+
+      #star {
+        opacity: 0.4;
+        background-image: url(./images/content/star-rotate.png);
+      }
+
+
+    </style>
+
   </head>
   <body>
     <div id="gameBox">
-      <div id="dice3d"></div>
+      <div id="dice3d">
+        <div id="rotating">
+          <div id="star"></div>
+        </div>
+      </div>
+      <div id="prizePopup">
+        <div id="prizeWindow"></div>
+        <div id="prize"></div>
+      </div>
     </div>
     <div id="startButton">
       Пуск
@@ -19,41 +70,191 @@
 
     <script>
 
+      function createGame() {
+
+        const dice3DInitProps={
+          container:gameContainer,  //Контейнер, в который добавляется игровой канвас
+
+          dice:{    //Параметры кубика
+            w:1.6,  //Ширина кубика
+            h:1.6,  //Высота кубика
+            d:1.6,  //Глубина кубика
+            x:0,  //Позиция по X (от центра поля)
+            y:-0.2, //Позиция по Y (от центра поля)
+            z:.8,   //Позиция по Z
+            r:0.3,  //Поворот относительно оси Z
+            f:0.14, //Размер фаски
+            m:{     //Свойства материала
+              roughness:0,          //Размытость бликов
+              metalness:0.9,        //Металлический блеск
+              clearcoat:0.9,        //Параметр бликов
+              clearcoatRoughness:0, //Размытость бликов
+            },
+          },
+
+          camera:{  //Параметры камеры
+            x:0,    //Позиция по X (от центра поля)
+            y:-3,   //Позиция по Y (от центра поля)
+            z:15,   //Позиция по Z
+          },
+
+          light: {  //Параметры света
+            x:5,    //Позиция точечного источника по X (от центра поля)
+            y:-1,   //Позиция точечного источника по Y (от центра поля)
+            z:25,   //Позиция точечного источника по Z
+            b:0.7,  //Яркость точечного истточника
+            a:0.5,  //Яркость фонового освещения
+          },
+
+          shadow: { //Параметры тени
+            r:15,   //Радиус
+            o:.2,   //Непрозрачность
+          },
+
+          startDelay:100,   //Задержка перед прыжком
+          upLimit:6,        //Ограничение прыжка по вертикали
+
+          jump: {   //Параметры прыжка (если заданы, должны все присутствовать)
+            count:7,          //Количество отскоков
+            scatter:{x:0.1,y:0.1},  //Разброс смещения при каждом движении
+            offset:{x:-0.05,y:-0.05},   //Смещение смещения при каждом движении
+            firstDuration:800,   //Длительность первого прыжка
+            lastDuration:300,    //Длительность последнего прыжка
+          },
+
+          rotation: {   //Параметры вращения (если заданы, должны все присутствовать)
+            randomPlace:.3,     //Доля количества прыжков, при которых работает startRandom
+            startRandom:1.5,    //Разброс вращений при старте
+            endRandom:.5,       //Разброс вращений при завершении
+          },
+
+          callbacks:{ //Колбеки, обрабатывающие начало и конец игры. В параметр передается целевая позиция кубика
+            create:onDiceAnimationCreate,
+            load:onDiceAnimationLoad,
+            start: onDiceAnimationStart,
+            finish: onDiceAnimationFinish,
+          }
+        }
+
+
+        const rotatingStarInitProps = {
+          container:rotatingStarContainer,  //Контейнер со вращающейся звездой
+        }
+
+        const prizePopupProps = {
+          container:prizePopupContainer,  //Контейнер для попапа
+          windowContainer:prizeWindowContainer,
+          prizeContainer:prizeContainer,
+          compositionId:"E9E7EFB6F4DF174892A12A98813B2490",
+          manifest: [
+        		{src:"images/content/popup_1.png?1648908673238", id:"popup_1"},
+        		{src:"images/content/star-rotate.png?1648908673238", id:"starrotate"},
+        		{src:"images/content/star.png?1648908673238", id:"star"}
+        	],
+          nativeWidth:1280,
+          nativeHeight:800,
+          callbacks:{ //Колбеки, обрабатывающие начало и конец игры. В параметр передается целевая позиция кубика
+            content: onPrizePopupContent,
+            view: onPrizePopupView,
+            close: onPrizePopupClose,
+          }
+        }
+
+        const dice3dGame=new Dice3dGame();
+        dice3dGame.initDice(dice3DInitProps);
+        dice3dGame.initStar(rotatingStarInitProps);
+        dice3dGame.initPopup(prizePopupProps);
+
+        return dice3dGame;
+      }
+
+
       const container = document.getElementById("gameBox");
       const gameContainer = document.getElementById("dice3d");
+      const rotatingStarContainer = document.getElementById("rotating");
+      const prizePopupContainer = document.getElementById("prizePopup");
+      const prizeWindowContainer = document.getElementById("prizeWindow");
+      const prizeContainer = document.getElementById("prize");
+
+
+
+
+
       const startButton = document.getElementById("startButton");
 
       const updateBounds=()=>{
         let scale=Math.min(container.clientWidth/1280,container.clientHeight/1280);
         gameContainer.style.transform="translate(-50%,-50%) scale("+scale+","+scale+")";
+        prizePopupContainer.style.transform="translate(-50%,-50%) scale("+scale+","+scale+")";
       }
 
-      const gameSceneInitProps={
-        container:gameContainer,
-        callbacks:{
-          start: function (value) {console.log("START",value);},
-          finish: function (value) {console.log("FINISH",value);},
-        }
-      }
+      var game;
 
       window.addEventListener("resize",(event) => {
         updateBounds();
       });
 
       window.addEventListener("load",(event) => {
+        game = createGame();
         updateBounds();
-
-        scene.start();
-
-        scene.resize();
+        game.dice.start();
+        game.dice.resize();
         gameContainer.style.visibility="visible";
+
       });
 
       startButton.addEventListener("click",(event) => {
         var value = Math.floor(Math.random()*4);
         startButton.innerHTML=value;
-        scene.run(value);
+        game.dice.run(value);   //Старт прыжка. В параметр передается целевая позиция кубика
       });
+
+
+      function onDiceAnimationCreate(dice) {
+        console.log("CREATE");
+        dice.element.style.opacity=0;
+      }
+
+      function onDiceAnimationLoad(dice) {
+        console.log("LOAD");
+        dice.element.style.opacity=1;
+      }
+
+      function onDiceAnimationStart(value) {
+        console.log("START",value);
+        game.star.hide();
+        game.popup.hide();
+      }
+
+      function onDiceAnimationFinish(value) {
+        console.log("FINISH",value);
+        game.star.show();
+
+        game.popup.show();
+
+      }
+
+
+      function onPrizePopupContent(container) {
+        console.log("CONTENT",container);
+      }
+
+      function onPrizePopupView() {
+        console.log("VIEW");
+      }
+
+      function onPrizePopupClose() {
+        console.log("CLOSE");
+      }
+
+
+    </script>
+
+  </body>
+</html>
+
+
+
     </script>
 
   </body>
