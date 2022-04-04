@@ -130,6 +130,7 @@ function game() {
     return dice3dGame;
   }
 
+  //Определяем dom-элементы
   const container = document.getElementById("gameBox");
   const gameContainer = document.getElementById("dice3d");
   const rotatingStarContainer = document.getElementById("rotating");
@@ -142,7 +143,9 @@ function game() {
   const clickArea = document.getElementById("clickArea");
   const startButton = document.getElementById("startButton");
 
-  function startGame() {
+
+  //Функция старта
+  function runGame() {
 
     const xhttp = new XMLHttpRequest();
     xhttp.onload = function() {
@@ -198,6 +201,7 @@ function game() {
     startButton.style.pointerEvents="all";
     startButton.style.cursor="pointer";
     startButton.style.opacity=1;
+    startButton.style.visibility="visible";
     clickArea.style.display="block";
   }
 
@@ -215,8 +219,8 @@ function game() {
   game.dice.resize();
   gameContainer.style.visibility="visible";
 
-  startButton.addEventListener("click",startGame);
-  clickArea.addEventListener("click",startGame);
+  startButton.addEventListener("click",runGame);
+  clickArea.addEventListener("click",runGame);
 
 
 }

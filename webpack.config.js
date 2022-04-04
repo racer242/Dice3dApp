@@ -21,6 +21,7 @@ const htmlPluginEntries = templateFiles.map((template) => new HTMLWebpackPlugin(
   filename: template,
   template: path.resolve(environment.paths.source, template),
   favicon: path.resolve(environment.paths.source, 'images', 'favicon.ico'),
+  minify: false,
 }));
 
 module.exports = {
@@ -137,6 +138,7 @@ module.exports = {
           globOptions: {
             ignore: ['*.DS_Store', 'Thumbs.db'],
           },
+          info: { minimized: true },
         },
       ],
     }),
