@@ -10,6 +10,29 @@ class PrizePopup {
     }
     this.container=props.container;
     this.prizeContainer=props.prizeContainer;
+    this.prizeTitleContainer=props.prizeTitleContainer;
+
+    this.content = [
+      "images/content/prize1.png",
+      "images/content/prize2.png",
+      "images/content/prize3.png",
+      "images/content/prize4.png",
+    ];
+
+    if (props?.content) {
+      this.content=props.content;
+    }
+
+    this.titles = [
+      "МУЗЫКАЛЬНАЯ КОЛОНКА!",
+      "ДЕНЬГИ НА ТЕЛЕФОН!",
+      "ЭЛЕКТРОСАМОКАТ!",
+      "ФОТОАППАРАТ!",
+    ];
+
+    if (props?.content) {
+      this.content=props.content;
+    }
 
     if (props?.callbacks) {
       if (props.callbacks.content) {
@@ -80,19 +103,25 @@ class PrizePopup {
     this.root.stop();
 
     this.root.showContentCallback=() => {
+      this.prizeContainer.style.opacity=1;
+      this.prizeContainer.style.transform="translate(-50%,-50%) scale(1,1)";
+
+      this.prizeTitleContainer.style.opacity=1;
+      this.prizeTitleContainer.style.transform="translate(-50%,-50%) scale(1,1)";
+
       if (this.contentCallback) {
-        this.contentCallback(this.prizeContainer);
+        this.contentCallback(this.prizeContainer,this.prizeTitleContainer);
       }
     }
     this.root.viewCallback=() => {
-      console.log("!!!",this.viewCallback);
       if (this.viewCallback) {
         this.viewCallback();
       }
     }
 
     this.root.closeCallback=() => {
-      console.log("???",this.closeCallback);
+      this.container.style.display="none";
+      this.root.gotoAndStop(0);
       if (this.closeCallback) {
         this.closeCallback();
       }
@@ -100,14 +129,22 @@ class PrizePopup {
 
   }
 
-  show() {
+  show(index) {
+    this.contentIndex=index;
     this.container.style.display="block";
     this.root.gotoAndPlay(0);
+
+    this.prizeContainer.innerHTML=`<img src=${this.content[this.contentIndex]}>`;
+    this.prizeTitleContainer.innerHTML=this.titles[this.contentIndex];
   }
 
   hide() {
-    this.container.style.display="none";
-    this.root.gotoAndStop(0);
+    this.root.gotoAndPlay("close");
+    this.prizeContainer.style.opacity=0;
+    this.prizeContainer.style.transform="translate(-50%,-50%) scale(.3,.3)";
+
+    this.prizeTitleContainer.style.opacity=0;
+    this.prizeTitleContainer.style.transform="translate(-50%,-50%) scale(.3,.3)";    
   }
 
 

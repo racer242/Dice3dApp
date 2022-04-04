@@ -5,17 +5,55 @@
   transform: translate(-50%,-50%);
   left:50%;
   top:50%;
+  display: none;
 }
 
 #prizeWindow {
   position: absolute;
+  transform: translate(-50%,-50%);
   width: 1280px;
   height: 800px;
+  left:50%;
+  top:50%;
 }
 
 #prize {
   position: absolute;
-  transform: translate(-50%,-50%);
-  width:268px;
-  height:268px;
+  width:250px;
+  height:250px;
+  left:50%;
+  top:50%;
+  opacity: 0;
+  transform: translate(-50%,-50%) scale(.3,.3);
+  transition: transform 1s ease-out, opacity 1s;
+}
+
+#prize img {
+  position: absolute;
+  width:100%;
+  height:100%;
+}
+
+#prizeTitle {
+  position: absolute;
+  left:50%;
+  top:25%;
+  opacity: 0;
+  transform: translate(-50%,-50%) scale(.3,.3);
+  transition: transform 1s ease-out, opacity 1s;
+
+  font-family: 'Dolce Caffe';
+  font-size: 64px;
+  color: #6A1485;
+  text-align: center;
+
+}
+
+@font-face {
+    font-family: 'Dolce Caffe';
+    src: url('../static/font/DolceCaffe-Regular.woff2') format('woff2'),
+        url('../static/font/DolceCaffe-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
 }

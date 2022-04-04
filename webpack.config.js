@@ -30,6 +30,10 @@ module.exports = {
   output: {
     filename: 'js/[name].js',
     path: environment.paths.output,
+    library: 'Dice3dGame',
+    libraryTarget: 'umd',
+    umdNamedDefine: true,
+    libraryExport: 'default',
   },
 
   module: {

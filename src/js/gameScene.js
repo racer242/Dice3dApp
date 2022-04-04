@@ -233,7 +233,7 @@ class GameScene {
   run(value) {
     if (this.animation) return;
     this.animation=true;
-
+    this.value=value;
     this.desiredValue=value;
     this.desiredIndex=this.edges.indexOf(this.desiredValue);
     this.desiredRotation=this.diceRotations[this.desiredIndex];

@@ -10,7 +10,7 @@ class RotatingStar {
     }
     this.container=props.container;
 
-    this.starContainer = this.container.querySelector("#star");
+    this.starContainer = props.starContainer;
 
   }
 
