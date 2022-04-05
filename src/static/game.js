@@ -91,28 +91,7 @@ function game() {
     		{src:"images/content/popup_1.png?1648908673238", id:"popup_1"},
     		{src:"images/content/star-rotate.png?1648908673238", id:"starrotate"},
     		{src:"images/content/star.png?1648908673238", id:"star"},
-
-        {src:"images/content/prize1.png", id:"prize1"},
-        {src:"images/content/prize2.png", id:"prize2"},
-        {src:"images/content/prize3.png", id:"prize3"},
-        {src:"images/content/prize4.png", id:"prize4"},
-
-        // {src:"static/font/DolceCaffe-Regular.woff2", id:"font1"},
-        // {src:"static/font/DolceCaffe-Regular.woff", id:"font2"},
-
     	],
-      content: [                      //Картинки призов
-        "images/content/prize1.png",
-        "images/content/prize2.png",
-        "images/content/prize3.png",
-        "images/content/prize4.png",
-      ],
-      titles: [                       //Надписи призов
-        "МУЗЫКАЛЬНАЯ КОЛОНКА!",
-        "ДЕНЬГИ НА ТЕЛЕФОН!",
-        "ЭЛЕКТРОСАМОКАТ!",
-        "ФОТОАППАРАТ!",
-      ],
       nativeWidth:1280, //Оригинальный размер окна попапа приза
       nativeHeight:800, //Оригинальный размер окна попапа приза
       callbacks:{ //Колбеки, обрабатывающие начало и конец игры. В параметр передается целевая позиция кубика
@@ -151,6 +130,7 @@ function game() {
     xhttp.onload = function() {
       const response = JSON.parse(this.responseText);
       game.dice.run(response.prize.facetNum);
+      game.popup.setContent(response.prize.thumb,response.prize.name);
     }
     xhttp.open("GET", "./static/response.json");
     xhttp.send();
@@ -187,7 +167,7 @@ function game() {
     game.star.show();
     setTimeout(
       function () {
-        game.popup.show(game.dice.value);
+        game.popup.show();
       },1000
     )
   }

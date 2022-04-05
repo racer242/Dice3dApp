@@ -134,8 +134,11 @@ class PrizePopup {
     this.container.style.display="block";
     this.root.gotoAndPlay(0);
 
-    this.prizeContainer.innerHTML=`<img src=${this.content[this.contentIndex]}>`;
-    this.prizeTitleContainer.innerHTML=this.titles[this.contentIndex];
+    let prizeSrc = this.prizeSrc?this.prizeSrc:this.content[this.contentIndex];
+    let prizeTitle = this.prizeTitle?this.prizeTitle:this.titles[this.contentIndex];
+
+    this.prizeContainer.innerHTML=`<img src=${prizeSrc}>`;
+    this.prizeTitleContainer.innerHTML=prizeTitle;
   }
 
   hide() {
@@ -144,7 +147,21 @@ class PrizePopup {
     this.prizeContainer.style.transform="translate(-50%,-50%) scale(.3,.3)";
 
     this.prizeTitleContainer.style.opacity=0;
-    this.prizeTitleContainer.style.transform="translate(-50%,-50%) scale(.3,.3)";    
+    this.prizeTitleContainer.style.transform="translate(-50%,-50%) scale(.3,.3)";
+  }
+
+  setContent(prizeSrc,prizeTitle) {
+    this.prizeSrc = prizeSrc;
+    this.prizeTitle = prizeTitle;
+    this.preloadPrize();
+  }
+
+  preloadPrize() {
+    if (this.prizeSrc) {
+      const node = document.createElement("img");
+      node.style.visibility="hidden";
+      node.src = this.prizeSrc;
+    }
   }
 
 
